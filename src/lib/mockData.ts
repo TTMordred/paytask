@@ -27,6 +27,8 @@ export interface Task {
   attachments?: string[];
   tags: string[];
   difficulty: 'easy' | 'medium' | 'hard';
+  clientRating?: number; // Added for client to rate worker
+  workerRating?: number; // Added for worker to rate client
 }
 
 export interface Rating {
@@ -88,7 +90,7 @@ export const mockUsers: User[] = [
 ];
 
 // Mock Tasks
-export const mockTasks: Task[] = [
+export let mockTasks: Task[] = [
   {
     id: '1',
     title: 'Write product descriptions for e-commerce site',
@@ -146,6 +148,10 @@ export const mockTasks: Task[] = [
     difficulty: 'medium',
   }
 ];
+
+export const addTask = (newTask: Task) => {
+  mockTasks.push(newTask);
+};
 
 // Mock Ratings
 export const mockRatings: Rating[] = [
@@ -218,4 +224,22 @@ export const getUserById = (id: string): User | undefined => {
 
 export const getPaymentsByTaskId = (taskId: string): Payment[] => {
   return mockPayments.filter(payment => payment.taskId === taskId);
+};
+
+export const updateTaskStatus = (taskId: string, newStatus: Task['status']) => {
+  const taskIndex = mockTasks.findIndex(task => task.id === taskId);
+  if (taskIndex !== -1) {
+    mockTasks[taskIndex] = { ...mockTasks[taskIndex], status: newStatus };
+  }
+};
+
+export const updateTaskClientRating = (taskId: string, rating: number) => {
+  const taskIndex = mockTasks.findIndex(task => task.id === taskId);
+  if (taskIndex !== -1) {
+    mockTasks[taskIndex] = { ...mockTasks[taskIndex], clientRating: rating };
+  }
+};
+
+export const addPayment = (newPayment: Payment) => {
+  mockPayments.push(newPayment);
 };
