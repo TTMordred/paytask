@@ -268,6 +268,10 @@ export const getUserById = (id: string): User | undefined => {
   return mockUsers.find(user => user.id === id);
 };
 
+export const getTaskById = (id: string): Task | undefined => {
+  return mockTasks.find(task => task.id === id);
+};
+
 export const getPaymentsByTaskId = (taskId: string): Payment[] => {
   return mockPayments.filter(payment => payment.taskId === taskId);
 };
@@ -277,10 +281,14 @@ export const addTask = (newTask: Task) => {
   saveData(LOCAL_STORAGE_KEYS.TASKS, mockTasks);
 };
 
-export const updateTaskStatus = (taskId: string, newStatus: Task['status']) => {
+export const updateTaskStatus = (taskId: string, newStatus: Task['status'], workerId?: string) => {
   const taskIndex = mockTasks.findIndex(task => task.id === taskId);
   if (taskIndex !== -1) {
-    mockTasks[taskIndex] = { ...mockTasks[taskIndex], status: newStatus };
+    const updates: Partial<Task> = { status: newStatus };
+    if (workerId !== undefined) {
+      updates.workerId = workerId;
+    }
+    mockTasks[taskIndex] = { ...mockTasks[taskIndex], ...updates };
     saveData(LOCAL_STORAGE_KEYS.TASKS, mockTasks);
   }
 };
