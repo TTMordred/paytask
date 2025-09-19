@@ -3,8 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Header } from '@/components/layout/Header';
-import { DollarSign, CheckCircle, XCircle, Star } from 'lucide-react';
-import { mockTasks, getTasksByUserId, currentUser, mockPayments, Payment, Task, addPayment, updateTaskStatus } from '@/lib/mockData'; // Assuming mockPayments can be updated
+import { DollarSign, CheckCircle, XCircle, Star, Ban } from 'lucide-react';
+import { mockTasks, getTasksByUserId, currentUser, mockPayments, Payment, Task, addPayment, updateTaskStatus, cancelTask } from '@/lib/mockData'; // Assuming mockPayments can be updated
 
 const TaskDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -93,6 +93,15 @@ const TaskDetails = () => {
     // Navigate to a revision request page or show a modal
   };
 
+  const handleCancel = () => {
+    if (!task || !window.confirm('Are you sure you want to cancel this task? This action cannot be undone.')) return;
+
+    cancelTask(task.id);
+    setTask(prevTask => prevTask ? { ...prevTask, status: 'cancelled' } : undefined);
+    alert('Task cancelled successfully!');
+    navigate('/dashboard');
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -156,6 +165,14 @@ const TaskDetails = () => {
                 )}
                 {task.status === 'approved' && task.clientRating && (
                   <p className="text-muted-foreground text-sm">You have already rated the worker for this task.</p>
+                )}
+
+                {task.status === 'published' && (
+                  <div>
+                    <Button onClick={handleCancel} variant="outline" className="text-destructive border-destructive hover:bg-destructive/10">
+                      <Ban className="w-4 h-4 mr-2" /> Cancel Task
+                    </Button>
+                  </div>
                 )}
               </div>
             )}

@@ -9,6 +9,7 @@ import BrowseTasks from "./pages/BrowseTasks";
 import CreateTask from "./pages/CreateTask";
 import TaskDetails from "./pages/TaskDetails";
 import RateWorker from "./pages/RateWorker";
+import BrowseTaskDetails from "./pages/BrowseTaskDetails";
 import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/create-task" element={<CreateTask />} />
           <Route path="/task/:id" element={<TaskDetails />} />
           <Route path="/task/:id/rate-worker" element={<RateWorker />} />
+          <Route path="/browse/:id" element={<BrowseTaskDetails />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
