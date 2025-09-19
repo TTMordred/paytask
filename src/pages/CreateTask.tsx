@@ -6,46 +6,109 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Header } from '@/components/layout/Header';
+import { useToast } from '@/hooks/use-toast';
 import { PlusCircle } from 'lucide-react';
-import { mockTasks, currentUser, addTask, Task } from '@/lib/mockData'; // Assuming mockTasks can be updated or a new function will handle task creation
+import { mockTasks, currentUser, addTask, Task } from '@/lib/mockData';
 
 const CreateTask = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [reward, setReward] = useState('');
   const [deadline, setDeadline] = useState('');
-  const [category, setCategory] = useState(''); // New field for category
+  const [category, setCategory] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     // Basic validation
     if (!title || !description || !reward || !deadline || !category) {
-      alert('Please fill in all fields.');
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all fields.",
+        variant: "destructive",
+      });
       return;
     }
 
-    const newTask: Task = {
-      id: String(mockTasks.length + 1), // Simple ID generation
-      title,
-      description,
-      reward: parseFloat(reward),
-      deadline,
-      category,
-      status: 'published', // Initial status
-      clientId: currentUser.id,
-      workerId: undefined, // Explicitly set to undefined as per Task interface
-      createdAt: new Date().toISOString(), // Set creation date
-      submittedAt: undefined,
-      submissionNotes: undefined,
-      attachments: [],
-      tags: [], // Add tags if needed
-      difficulty: 'medium', // Default difficulty
-    };
+    // Check if reward is a valid number
+    const rewardNum = parseFloat(reward);
+    if (isNaN(rewardNum) || rewardNum <= 0) {
+      toast({
+        title: "Invalid Reward",
+        description: "Please enter a valid reward amount.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    addTask(newTask); // Add the new task using the helper function
-    alert('Task created successfully!');
-    navigate('/dashboard');
+    // Check if deadline is in the future
+    const deadlineDate = new Date(deadline);
+    if (deadlineDate <= new Date()) {
+      toast({
+        title: "Invalid Deadline",
+        description: "Deadline must be in the future.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Generate a unique ID based on timestamp and random number
+      const uniqueId = String(Date.now() + Math.random().toString(36).substr(2, 9));
+      
+      const newTask: Task = {
+        id: uniqueId,
+        title: title.trim(),
+        description: description.trim(),
+        reward: rewardNum,
+        deadline: deadlineDate.toISOString(),
+        category: category.trim(),
+        status: 'published',
+        clientId: currentUser.id,
+        workerId: undefined,
+        createdAt: new Date().toISOString(),
+        submittedAt: undefined,
+        submissionNotes: undefined,
+        attachments: [],
+        tags: [],
+        difficulty: 'medium',
+      };
+
+      // Add the new task
+      addTask(newTask);
+      
+      toast({
+        title: "Task Created Successfully!",
+        description: `Your task "${title}" has been published and is now available for workers to apply.`,
+      });
+
+      // Clear form
+      setTitle('');
+      setDescription('');
+      setReward('');
+      setDeadline('');
+      setCategory('');
+
+      // Navigate to browse tasks to see the new task
+      navigate('/browse');
+      
+    } catch (error) {
+      toast({
+        title: "Error Creating Task",
+        description: "There was an error creating your task. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -133,8 +196,12 @@ const CreateTask = () => {
                   required
                 />
               </div>
-              <Button type="submit" className="w-full bg-gradient-primary shadow-primary">
-                Create Task
+              <Button 
+                type="submit" 
+                className="w-full bg-gradient-primary shadow-primary"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Creating Task...' : 'Create Task'}
               </Button>
             </form>
           </CardContent>

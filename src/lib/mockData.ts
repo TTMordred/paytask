@@ -154,6 +154,84 @@ const initialMockTasks: Task[] = [
     createdAt: '2024-01-21T11:15:00Z',
     tags: ['voice over', 'audio', 'video'],
     difficulty: 'medium',
+  },
+  {
+    id: '5',
+    title: 'Logo design for startup',
+    description: 'Create a modern, minimalist logo for a tech startup. Should work well in both color and black/white versions.',
+    category: 'Design',
+    reward: 150,
+    deadline: '2024-02-05T18:00:00Z',
+    status: 'published',
+    clientId: '1',
+    createdAt: '2024-01-22T09:30:00Z',
+    tags: ['logo', 'branding', 'design'],
+    difficulty: 'medium',
+  },
+  {
+    id: '6',
+    title: 'React component development',
+    description: 'Build reusable React components for a dashboard. TypeScript and modern hooks required.',
+    category: 'Programming',
+    reward: 300,
+    deadline: '2024-02-10T16:00:00Z',
+    status: 'published',
+    clientId: '1',
+    createdAt: '2024-01-23T14:20:00Z',
+    tags: ['react', 'typescript', 'frontend'],
+    difficulty: 'hard',
+  },
+  {
+    id: '7',
+    title: 'Social media content creation',
+    description: 'Create 10 engaging posts for Instagram and Facebook. Include captions and hashtag suggestions.',
+    category: 'Marketing',
+    reward: 80,
+    deadline: '2024-02-02T12:00:00Z',
+    status: 'published',
+    clientId: '1',
+    createdAt: '2024-01-24T10:45:00Z',
+    tags: ['social media', 'content', 'marketing'],
+    difficulty: 'easy',
+  },
+  {
+    id: '8',
+    title: 'Database optimization',
+    description: 'Optimize MySQL database queries and improve performance for e-commerce platform.',
+    category: 'Programming',
+    reward: 250,
+    deadline: '2024-02-08T20:00:00Z',
+    status: 'published',
+    clientId: '1',
+    createdAt: '2024-01-25T11:30:00Z',
+    tags: ['mysql', 'database', 'optimization'],
+    difficulty: 'hard',
+  },
+  {
+    id: '9',
+    title: 'Translation to Spanish',
+    description: 'Translate website content from English to Spanish. Native speaker preferred.',
+    category: 'Translation',
+    reward: 120,
+    deadline: '2024-02-06T15:00:00Z',
+    status: 'published',
+    clientId: '1',
+    createdAt: '2024-01-26T08:15:00Z',
+    tags: ['translation', 'spanish', 'content'],
+    difficulty: 'medium',
+  },
+  {
+    id: '10',
+    title: 'Video editing for YouTube',
+    description: 'Edit 5-minute YouTube video with transitions, effects, and background music.',
+    category: 'Video',
+    reward: 90,
+    deadline: '2024-02-04T17:00:00Z',
+    status: 'published',
+    clientId: '1',
+    createdAt: '2024-01-27T13:00:00Z',
+    tags: ['video editing', 'youtube', 'post-production'],
+    difficulty: 'medium',
   }
 ];
 
@@ -231,6 +309,12 @@ export let mockTasks: Task[] = loadData(LOCAL_STORAGE_KEYS.TASKS, initialMockTas
 export let mockRatings: Rating[] = loadData(LOCAL_STORAGE_KEYS.RATINGS, initialMockRatings);
 export let mockPayments: Payment[] = loadData(LOCAL_STORAGE_KEYS.PAYMENTS, initialMockPayments);
 
+// Helper function to reload tasks from localStorage
+export const reloadTasks = (): Task[] => {
+  mockTasks = loadData(LOCAL_STORAGE_KEYS.TASKS, initialMockTasks);
+  return mockTasks;
+};
+
 // Current logged in user (can be switched for demo)
 // Load current user from localStorage, or default to the first mock user
 const loadCurrentUser = (): User => {
@@ -268,6 +352,10 @@ export const getUserById = (id: string): User | undefined => {
   return mockUsers.find(user => user.id === id);
 };
 
+export const getTaskById = (id: string): Task | undefined => {
+  return mockTasks.find(task => task.id === id);
+};
+
 export const getPaymentsByTaskId = (taskId: string): Payment[] => {
   return mockPayments.filter(payment => payment.taskId === taskId);
 };
@@ -277,10 +365,25 @@ export const addTask = (newTask: Task) => {
   saveData(LOCAL_STORAGE_KEYS.TASKS, mockTasks);
 };
 
-export const updateTaskStatus = (taskId: string, newStatus: Task['status']) => {
+export const updateTaskStatus = (taskId: string, newStatus: Task['status'], workerId?: string, submissionData?: { submissionNotes?: string; submittedAt?: string; attachments?: string[] }) => {
   const taskIndex = mockTasks.findIndex(task => task.id === taskId);
   if (taskIndex !== -1) {
-    mockTasks[taskIndex] = { ...mockTasks[taskIndex], status: newStatus };
+    const updates: Partial<Task> = { status: newStatus };
+    if (workerId !== undefined) {
+      updates.workerId = workerId;
+    }
+    if (submissionData) {
+      if (submissionData.submissionNotes) {
+        updates.submissionNotes = submissionData.submissionNotes;
+      }
+      if (submissionData.submittedAt) {
+        updates.submittedAt = submissionData.submittedAt;
+      }
+      if (submissionData.attachments) {
+        updates.attachments = submissionData.attachments;
+      }
+    }
+    mockTasks[taskIndex] = { ...mockTasks[taskIndex], ...updates };
     saveData(LOCAL_STORAGE_KEYS.TASKS, mockTasks);
   }
 };
