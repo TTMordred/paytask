@@ -18,7 +18,7 @@ export interface Task {
   category: string;
   reward: number;
   deadline: string;
-  status: 'draft' | 'published' | 'in_progress' | 'submitted' | 'approved' | 'rejected';
+  status: 'draft' | 'published' | 'in_progress' | 'submitted' | 'approved' | 'rejected' | 'cancelled';
   clientId: string;
   workerId?: string;
   createdAt: string;
@@ -50,8 +50,17 @@ export interface Payment {
   createdAt: string;
 }
 
-// Mock Users
-export const mockUsers: User[] = [
+// Keys for localStorage
+const LOCAL_STORAGE_KEYS = {
+  USERS: 'paytask_users',
+  TASKS: 'paytask_tasks',
+  RATINGS: 'paytask_ratings',
+  PAYMENTS: 'paytask_payments',
+  CURRENT_USER: 'paytask_current_user',
+};
+
+// Initial Mock Data
+const initialMockUsers: User[] = [
   {
     id: '1',
     name: 'Sarah Chen',
@@ -89,8 +98,7 @@ export const mockUsers: User[] = [
   }
 ];
 
-// Mock Tasks
-export let mockTasks: Task[] = [
+const initialMockTasks: Task[] = [
   {
     id: '1',
     title: 'Write product descriptions for e-commerce site',
@@ -149,12 +157,7 @@ export let mockTasks: Task[] = [
   }
 ];
 
-export const addTask = (newTask: Task) => {
-  mockTasks.push(newTask);
-};
-
-// Mock Ratings
-export const mockRatings: Rating[] = [
+const initialMockRatings: Rating[] = [
   {
     id: '1',
     taskId: '2',
@@ -175,8 +178,7 @@ export const mockRatings: Rating[] = [
   }
 ];
 
-// Mock Payments
-export const mockPayments: Payment[] = [
+const initialMockPayments: Payment[] = [
   {
     id: '1',
     taskId: '1',
@@ -203,8 +205,52 @@ export const mockPayments: Payment[] = [
   }
 ];
 
+// Helper to load data from localStorage or use initial mock data
+const loadData = <T>(key: string, initialData: T[]): T[] => {
+  try {
+    const storedData = localStorage.getItem(key);
+    return storedData ? JSON.parse(storedData) : initialData;
+  } catch (error) {
+    console.error(`Error loading data from localStorage for key ${key}:`, error);
+    return initialData;
+  }
+};
+
+// Helper to save data to localStorage
+const saveData = <T>(key: string, data: T[]): void => {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch (error) {
+    console.error(`Error saving data to localStorage for key ${key}:`, error);
+  }
+};
+
+// Export mutable mock data, loaded from localStorage
+export let mockUsers: User[] = loadData(LOCAL_STORAGE_KEYS.USERS, initialMockUsers);
+export let mockTasks: Task[] = loadData(LOCAL_STORAGE_KEYS.TASKS, initialMockTasks);
+export let mockRatings: Rating[] = loadData(LOCAL_STORAGE_KEYS.RATINGS, initialMockRatings);
+export let mockPayments: Payment[] = loadData(LOCAL_STORAGE_KEYS.PAYMENTS, initialMockPayments);
+
 // Current logged in user (can be switched for demo)
-export const currentUser: User = mockUsers[0]; // Sarah Chen (Client)
+// Load current user from localStorage, or default to the first mock user
+const loadCurrentUser = (): User => {
+  try {
+    const storedUser = localStorage.getItem(LOCAL_STORAGE_KEYS.CURRENT_USER);
+    return storedUser ? JSON.parse(storedUser) : mockUsers[0];
+  } catch (error) {
+    console.error('Error loading current user from localStorage:', error);
+    return mockUsers[0];
+  }
+};
+export const currentUser: User = loadCurrentUser();
+
+// Helper to update current user in localStorage
+export const setCurrentUser = (user: User): void => {
+  localStorage.setItem(LOCAL_STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
+  // Note: In a real app, you might want to reload the page or update global state
+  // to reflect the user change. For this mock, we'll assume it's handled.
+};
+
 
 export const getTasksByStatus = (status: Task['status']): Task[] => {
   return mockTasks.filter(task => task.status === status);
@@ -226,10 +272,16 @@ export const getPaymentsByTaskId = (taskId: string): Payment[] => {
   return mockPayments.filter(payment => payment.taskId === taskId);
 };
 
+export const addTask = (newTask: Task) => {
+  mockTasks.push(newTask);
+  saveData(LOCAL_STORAGE_KEYS.TASKS, mockTasks);
+};
+
 export const updateTaskStatus = (taskId: string, newStatus: Task['status']) => {
   const taskIndex = mockTasks.findIndex(task => task.id === taskId);
   if (taskIndex !== -1) {
     mockTasks[taskIndex] = { ...mockTasks[taskIndex], status: newStatus };
+    saveData(LOCAL_STORAGE_KEYS.TASKS, mockTasks);
   }
 };
 
@@ -237,9 +289,32 @@ export const updateTaskClientRating = (taskId: string, rating: number) => {
   const taskIndex = mockTasks.findIndex(task => task.id === taskId);
   if (taskIndex !== -1) {
     mockTasks[taskIndex] = { ...mockTasks[taskIndex], clientRating: rating };
+    saveData(LOCAL_STORAGE_KEYS.TASKS, mockTasks);
   }
 };
 
 export const addPayment = (newPayment: Payment) => {
   mockPayments.push(newPayment);
+  saveData(LOCAL_STORAGE_KEYS.PAYMENTS, mockPayments);
+};
+
+export const cancelTask = (taskId: string) => {
+  const taskIndex = mockTasks.findIndex(task => task.id === taskId);
+  if (taskIndex !== -1) {
+    const task = mockTasks[taskIndex];
+    if (task.status === 'published') { // Only allow cancellation if no worker has applied
+      mockTasks[taskIndex] = { ...task, status: 'cancelled' };
+      saveData(LOCAL_STORAGE_KEYS.TASKS, mockTasks);
+
+      // Optionally, refund the escrowed amount
+      const paymentToRefund = mockPayments.find(p => p.taskId === taskId && p.type === 'deposit' && p.status === 'escrowed');
+      if (paymentToRefund) {
+        paymentToRefund.status = 'refunded';
+        saveData(LOCAL_STORAGE_KEYS.PAYMENTS, mockPayments);
+        console.log(`Refunded $${paymentToRefund.amount} for cancelled task ${taskId}`);
+      }
+    } else {
+      console.warn(`Task ${taskId} cannot be cancelled because its status is ${task.status}.`);
+    }
+  }
 };

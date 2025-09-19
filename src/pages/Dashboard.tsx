@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { TaskCard } from '@/components/ui/task-card';
 import { Header } from '@/components/layout/Header';
 import { Plus, TrendingUp, Clock, CheckCircle, DollarSign } from 'lucide-react';
-import { currentUser, getTasksByUserId, mockTasks } from '@/lib/mockData';
+import { currentUser, getTasksByUserId, Task } from '@/lib/mockData'; // Import Task interface
 import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
@@ -49,8 +49,29 @@ const Dashboard = () => {
     },
   ];
 
-  const handleTaskAction = (task: any) => {
-    navigate(`/task/${task.id}`);
+  const handleTaskAction = (task: Task) => { // Use Task interface
+    if (currentUser.role === 'client') {
+      navigate(`/task/${task.id}`); // Client manages their own tasks
+    } else if (currentUser.role === 'worker') {
+      if (task.status === 'published') {
+        navigate(`/browse/${task.id}`); // Worker applies for published tasks
+      } else {
+        navigate(`/task/${task.id}`); // Worker views details of accepted/submitted tasks
+      }
+    }
+  };
+
+  const getTaskCardActionLabel = (task: Task) => {
+    if (currentUser.role === 'client') {
+      return 'Manage Task';
+    } else if (currentUser.role === 'worker') {
+      if (task.status === 'published') {
+        return 'Apply Now';
+      } else {
+        return 'View Details';
+      }
+    }
+    return 'View Details'; // Default
   };
 
   return (
@@ -67,14 +88,16 @@ const Dashboard = () => {
               Manage your tasks and track your progress
             </p>
           </div>
-          <Button 
-            size="lg" 
-            className="bg-gradient-primary shadow-primary"
-            onClick={() => navigate('/create-task')}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Create New Task
-          </Button>
+          {currentUser.role === 'client' && ( // Only show "Create New Task" for clients
+            <Button 
+              size="lg" 
+              className="bg-gradient-primary shadow-primary"
+              onClick={() => navigate('/create-task')}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Create New Task
+            </Button>
+          )}
         </div>
 
         {/* Stats Cards */}
@@ -182,7 +205,7 @@ const Dashboard = () => {
                   key={task.id}
                   task={task}
                   onAction={handleTaskAction}
-                  actionLabel="Manage Task"
+                  actionLabel={getTaskCardActionLabel(task)}
                   showClient={false}
                 />
               ))}
@@ -210,7 +233,7 @@ const Dashboard = () => {
                   key={task.id}
                   task={task}
                   onAction={handleTaskAction}
-                  actionLabel="Review Submission"
+                  actionLabel={getTaskCardActionLabel(task)}
                   showClient={false}
                 />
               ))}
@@ -235,7 +258,7 @@ const Dashboard = () => {
                   key={task.id}
                   task={task}
                   onAction={handleTaskAction}
-                  actionLabel="View Details"
+                  actionLabel={getTaskCardActionLabel(task)}
                   showClient={false}
                 />
               ))}

@@ -36,7 +36,7 @@ const BrowseTasks = () => {
   });
 
   const handleTaskAction = (task: Task) => {
-    navigate(`/task/${task.id}`);
+    navigate(`/browse/${task.id}`); // Navigate to the BrowseTaskDetails page for workers
   };
 
   return (
