@@ -65,13 +65,8 @@ const BrowseTaskDetails = () => {
       
       toast({
         title: "Application Successful!",
-        description: "You have successfully applied for this task. The client will be notified.",
+        description: "You have successfully applied for this task. You can start working and submit when completed.",
       });
-      
-      // Navigate back to browse after a short delay
-      setTimeout(() => {
-        navigate('/browse');
-      }, 2000);
       
     } catch (error) {
       toast({
@@ -121,14 +116,14 @@ const BrowseTaskDetails = () => {
         <main className="container mx-auto px-4 py-8 text-center">
           <AlertCircle className="w-24 h-24 text-muted-foreground mx-auto mb-6" />
           <h1 className="text-4xl font-bold text-foreground mb-4">
-            Không tìm thấy công việc
+            Task Not Found
           </h1>
           <p className="text-muted-foreground text-lg mb-6">
-            Công việc với ID "{id}" không tồn tại hoặc đã bị xóa.
+            Task with ID "{id}" does not exist or has been deleted.
           </p>
           <Button onClick={() => navigate('/browse')}>
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Quay lại danh sách công việc
+            Back to Browse Tasks
           </Button>
         </main>
       </div>
@@ -150,7 +145,7 @@ const BrowseTaskDetails = () => {
           className="mb-6"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Quay lại danh sách công việc
+          Back to Browse Tasks
         </Button>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -166,16 +161,16 @@ const BrowseTaskDetails = () => {
                     </CardTitle>
                     <div className="flex items-center gap-2 flex-wrap">
                       <Badge className={getStatusColor(task.status)}>
-                        {task.status === 'published' ? 'Đang tuyển' : 
-                         task.status === 'in_progress' ? 'Đang thực hiện' :
-                         task.status === 'submitted' ? 'Đã nộp' :
-                         task.status === 'approved' ? 'Đã chấp nhận' :
-                         task.status === 'rejected' ? 'Bị từ chối' : task.status}
+                        {task.status === 'published' ? 'Open' : 
+                         task.status === 'in_progress' ? 'In Progress' :
+                         task.status === 'submitted' ? 'Submitted' :
+                         task.status === 'approved' ? 'Approved' :
+                         task.status === 'rejected' ? 'Rejected' : task.status}
                       </Badge>
                       <Badge className={getDifficultyColor(task.difficulty)}>
-                        {task.difficulty === 'easy' ? 'Dễ' :
-                         task.difficulty === 'medium' ? 'Trung bình' :
-                         task.difficulty === 'hard' ? 'Khó' : task.difficulty}
+                        {task.difficulty === 'easy' ? 'Easy' :
+                         task.difficulty === 'medium' ? 'Medium' :
+                         task.difficulty === 'hard' ? 'Hard' : task.difficulty}
                       </Badge>
                       <Badge variant="outline">{task.category}</Badge>
                     </div>
@@ -183,7 +178,7 @@ const BrowseTaskDetails = () => {
                   <div className="text-right">
                     <div className="flex items-center text-2xl font-bold text-green-600">
                       <DollarSign className="w-6 h-6 mr-1" />
-                      {task.reward.toLocaleString('vi-VN')}đ
+                      ${task.reward.toLocaleString()}
                     </div>
                   </div>
                 </div>
@@ -193,7 +188,7 @@ const BrowseTaskDetails = () => {
                   <div>
                     <h3 className="font-semibold text-foreground mb-2 flex items-center">
                       <FileText className="w-4 h-4 mr-2" />
-                      Mô tả công việc
+                      Task Description
                     </h3>
                     <p className="text-muted-foreground leading-relaxed">
                       {task.description}
@@ -204,7 +199,7 @@ const BrowseTaskDetails = () => {
                     <div>
                       <h3 className="font-semibold text-foreground mb-2 flex items-center">
                         <CheckCircle className="w-4 h-4 mr-2" />
-                        Ghi chú nộp bài
+                        Submission Notes
                       </h3>
                       <p className="text-muted-foreground leading-relaxed">
                         {task.submissionNotes}
@@ -215,16 +210,16 @@ const BrowseTaskDetails = () => {
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <div className="flex items-center">
                       <Calendar className="w-4 h-4 mr-1" />
-                      Hạn nộp: {formatDate(task.deadline)}
+                      Deadline: {formatDate(task.deadline)}
                     </div>
                     <div className="flex items-center">
                       <Clock className="w-4 h-4 mr-1" />
-                      Tạo: {formatDate(task.createdAt)}
+                      Created: {formatDate(task.createdAt)}
                     </div>
                     {task.submittedAt && (
                       <div className="flex items-center">
                         <CheckCircle className="w-4 h-4 mr-1" />
-                        Nộp: {formatDate(task.submittedAt)}
+                        Submitted: {formatDate(task.submittedAt)}
                       </div>
                     )}
                   </div>
@@ -248,7 +243,7 @@ const BrowseTaskDetails = () => {
                   {task.attachments && task.attachments.length > 0 && (
                     <div>
                       <h3 className="font-semibold text-foreground mb-2">
-                        Tệp đính kèm
+                        Attachments
                       </h3>
                       <div className="space-y-2">
                         {task.attachments.map((attachment, index) => (
@@ -273,7 +268,7 @@ const BrowseTaskDetails = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center text-lg">
                     <UserIcon className="w-5 h-5 mr-2" />
-                    Thông tin khách hàng
+                    Client Information
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -290,22 +285,22 @@ const BrowseTaskDetails = () => {
                   <Separator className="my-4" />
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Đánh giá</span>
+                      <span className="text-sm text-muted-foreground">Rating</span>
                       <div className="flex items-center">
                         <Star className="w-4 h-4 text-yellow-400 mr-1" />
                         <span className="font-semibold">{client.reputation.toFixed(1)}</span>
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Tổng công việc</span>
+                      <span className="text-sm text-muted-foreground">Total Tasks</span>
                       <span className="font-semibold">{client.totalTasks}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Hoàn thành</span>
+                      <span className="text-sm text-muted-foreground">Completed</span>
                       <span className="font-semibold">{client.completedTasks}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Tham gia</span>
+                      <span className="text-sm text-muted-foreground">Joined</span>
                       <span className="font-semibold">{formatDate(client.joinedAt)}</span>
                     </div>
                   </div>
@@ -316,28 +311,28 @@ const BrowseTaskDetails = () => {
             {/* Task Statistics */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Thông tin thanh toán</CardTitle>
+                <CardTitle className="text-lg">Payment Information</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Thù lao</span>
+                    <span className="text-sm text-muted-foreground">Reward</span>
                     <span className="font-bold text-green-600 text-lg">
-                      {task.reward.toLocaleString('vi-VN')}đ
+                      ${task.reward.toLocaleString()}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Hạn nộp</span>
+                    <span className="text-sm text-muted-foreground">Deadline</span>
                     <span className="font-semibold">
                       {formatDate(task.deadline)}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Độ khó</span>
+                    <span className="text-sm text-muted-foreground">Difficulty</span>
                     <Badge className={getDifficultyColor(task.difficulty)}>
-                      {task.difficulty === 'easy' ? 'Dễ' :
-                       task.difficulty === 'medium' ? 'Trung bình' :
-                       task.difficulty === 'hard' ? 'Khó' : task.difficulty}
+                      {task.difficulty === 'easy' ? 'Easy' :
+                       task.difficulty === 'medium' ? 'Medium' :
+                       task.difficulty === 'hard' ? 'Hard' : task.difficulty}
                     </Badge>
                   </div>
                 </div>
@@ -354,10 +349,10 @@ const BrowseTaskDetails = () => {
                     className="w-full"
                     size="lg"
                   >
-                    {isApplying ? 'Đang ứng tuyển...' : 'Ứng tuyển ngay'}
+                    {isApplying ? 'Applying...' : 'Apply Now'}
                   </Button>
                   <p className="text-xs text-muted-foreground mt-2 text-center">
-                    Bạn sẽ được giao công việc này nếu ứng tuyển thành công
+                    You will be assigned this task if your application is successful
                   </p>
                 </CardContent>
               </Card>
@@ -366,17 +361,56 @@ const BrowseTaskDetails = () => {
             {task.status === 'in_progress' && task.workerId === currentUser.id && (
               <Card>
                 <CardContent className="pt-6">
+                  <div className="text-center space-y-3">
+                    <CheckCircle className="w-12 h-12 text-green-500 mx-auto" />
+                    <div>
+                      <p className="font-bold text-green-700 text-lg">
+                        Application Successful!
+                      </p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        You have been assigned this task
+                      </p>
+                    </div>
+                    <div className="space-y-2 w-full">
+                      <Button 
+                        onClick={() => navigate(`/task/${task.id}`)}
+                        className="w-full"
+                        size="lg"
+                      >
+                        Start Working & Submit
+                      </Button>
+                      <Button 
+                        onClick={() => navigate('/browse')}
+                        variant="outline"
+                        className="w-full"
+                      >
+                        Continue Browsing Tasks
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      You can start working now or continue looking for other tasks
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {(task.status === 'submitted' || task.status === 'approved' || task.status === 'rejected') && task.workerId === currentUser.id && (
+              <Card>
+                <CardContent className="pt-6">
                   <div className="text-center space-y-2">
-                    <CheckCircle className="w-8 h-8 text-green-500 mx-auto" />
-                    <p className="font-semibold text-green-700">
-                      Bạn đang thực hiện công việc này
+                    <CheckCircle className="w-8 h-8 text-blue-500 mx-auto" />
+                    <p className="font-semibold text-blue-700">
+                      {task.status === 'submitted' ? 'You have submitted' :
+                       task.status === 'approved' ? 'Task approved' :
+                       'Task needs revision'}
                     </p>
                     <Button 
-                      onClick={() => navigate(`/tasks/${task.id}`)}
+                      onClick={() => navigate(`/task/${task.id}`)}
                       variant="outline"
                       className="w-full"
                     >
-                      Xem chi tiết công việc
+                      View Task Details
                     </Button>
                   </div>
                 </CardContent>
@@ -390,8 +424,8 @@ const BrowseTaskDetails = () => {
                     <AlertCircle className="w-8 h-8 text-yellow-500 mx-auto" />
                     <p className="text-sm text-muted-foreground">
                       {task.clientId === currentUser.id 
-                        ? 'Đây là công việc của bạn' 
-                        : 'Bạn không thể ứng tuyển công việc này'}
+                        ? 'This is your task' 
+                        : 'You cannot apply for this task'}
                     </p>
                   </div>
                 </CardContent>

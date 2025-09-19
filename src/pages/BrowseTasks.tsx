@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from '@/components/layout/Header';
 import { TaskCard } from '@/components/ui/task-card';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Search, Filter, DollarSign, Clock } from 'lucide-react';
-import { mockTasks, Task } from '@/lib/mockData';
+import { mockTasks, Task, reloadTasks } from '@/lib/mockData';
 import { useNavigate } from 'react-router-dom';
 
 const BrowseTasks = () => {
@@ -16,11 +16,38 @@ const BrowseTasks = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedDifficulty, setSelectedDifficulty] = useState('all');
-  const [priceRange, setPriceRange] = useState([0, 200]);
+  const [priceRange, setPriceRange] = useState([0, 500]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+
+  // Load tasks when component mounts or when coming back from task creation
+  useEffect(() => {
+    // Force reload of tasks from localStorage
+    const allTasks = reloadTasks();
+    const publishedTasks = allTasks
+      .filter(task => task.status === 'published')
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()); // Sort by newest first
+    setTasks(publishedTasks);
+  }, []);
+
+  // Re-load tasks when the page becomes visible (e.g., coming back from creation)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        const allTasks = reloadTasks();
+        const publishedTasks = allTasks
+          .filter(task => task.status === 'published')
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()); // Sort by newest first
+        setTasks(publishedTasks);
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
+
+  const availableTasks = tasks;
   
-  const availableTasks = mockTasks.filter(task => task.status === 'published');
-  
-  const categories = ['all', ...Array.from(new Set(mockTasks.map(task => task.category)))];
+  const categories = ['all', ...Array.from(new Set(tasks.map(task => task.category)))];
   const difficulties = ['all', 'easy', 'medium', 'hard'];
 
   const filteredTasks = availableTasks.filter(task => {
@@ -120,9 +147,9 @@ const BrowseTasks = () => {
                   <Slider
                     value={priceRange}
                     onValueChange={setPriceRange}
-                    max={200}
+                    max={500}
                     min={0}
-                    step={5}
+                    step={10}
                     className="mt-2"
                   />
                 </div>
@@ -199,7 +226,7 @@ const BrowseTasks = () => {
                         setSearchQuery('');
                         setSelectedCategory('all');
                         setSelectedDifficulty('all');
-                        setPriceRange([0, 200]);
+                        setPriceRange([0, 500]);
                       }}
                     >
                       Clear Filters

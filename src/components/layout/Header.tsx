@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { UserSwitcher } from '@/components/ui/user-switcher';
 import { currentUser } from '@/lib/mockData';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -81,20 +82,7 @@ export const Header = () => {
               <Badge className="absolute -top-1 -right-1 w-2 h-2 p-0 bg-destructive" />
             </Button>
 
-            <div className="flex items-center space-x-2">
-              <Avatar className="w-8 h-8">
-                <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
-                <AvatarFallback>
-                  <User className="w-4 h-4" />
-                </AvatarFallback>
-              </Avatar>
-              <div className="hidden md:block">
-                <p className="text-sm font-medium">{currentUser.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  ⭐ {currentUser.reputation.toFixed(1)}
-                </p>
-              </div>
-            </div>
+            <UserSwitcher />
           </div>
         </div>
       </div>
