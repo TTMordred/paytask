@@ -38,13 +38,11 @@ PayTask enables anyone to post or complete micro-tasks ($0.50–$50) with instan
 
 
  Frontend
+ 
 ```
-
----
 
 ## Project Structure
 
-```
 paytask-mvp/
 ├── programs/
 │   └── paytask/          # Anchor smart contracts (Rust)
@@ -68,6 +66,7 @@ paytask-mvp/
 ├── docs/                 # API docs, architecture diagrams
 └── scripts/              # Deployment, migration tools
 ```
+
 
 ---
 
@@ -110,7 +109,7 @@ OR timeout → auto_approve() → payout_release()
 ```
 
 ## API Endpoints
-```
+
 ### Authentication
 - `POST /auth/signup-email` — Email + OTP signup (custodial wallet)
 - `POST /auth/signup-wallet` — External wallet connect
